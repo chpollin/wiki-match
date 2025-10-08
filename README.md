@@ -47,13 +47,11 @@
 - **Testing**: Built-in unit tests (16 passing)
 
 ### Not Yet Implemented ❌
-- Keyboard shortcuts (↑/↓ navigation, Tab to next review)
 - Batch actions ("Accept all >95%", "Reject all")
 - Undo/Redo functionality
 - Multi-column context matching (name + birth year)
 - Session persistence (LocalStorage/IndexedDB)
 - Enhanced entity preview (images, properties)
-- Dark mode
 - Virtual scrolling (for 10k+ rows)
 
 See [MVP-STATUS.md](knowledge/MVP-STATUS.md) for detailed implementation status.
@@ -102,13 +100,11 @@ wiki-match/
 │   ├── columnConfig.js     # Column mapping UI
 │   ├── reconciliation.js   # Match review interface
 │   └── export.js           # CSV export service
-├── test-data/              # Sample CSV/TSV files
-├── sample.csv              # Quick test data
+├── test-data/              # Sample CSV/TSV files (people, places, concepts, orgs)
 ├── README.md               # This file
-├── README-USAGE.md         # Detailed usage guide
-├── TEST-CHECKLIST.md       # Manual testing guide
-└── knowledge/              # Planning docs
+└── knowledge/              # Planning & status docs
     ├── MVP-STATUS.md       # Implementation status
+    ├── NOT-IMPLEMENTED.md  # Features not in MVP
     ├── REQUIREMENTS.md     # Original requirements
     ├── DESIGN.md           # UI/UX specification
     └── IMPLEMENTATION-PLAN.md  # Development roadmap
@@ -118,9 +114,8 @@ wiki-match/
 
 ## 📖 Documentation
 
-- **[README-USAGE.md](README-USAGE.md)** - Complete usage guide with examples
-- **[TEST-CHECKLIST.md](TEST-CHECKLIST.md)** - Manual testing checklist
-- **[knowledge/MVP-STATUS.md](knowledge/MVP-STATUS.md)** - Implementation status
+- **[knowledge/MVP-STATUS.md](knowledge/MVP-STATUS.md)** - Implementation status (85% complete)
+- **[knowledge/NOT-IMPLEMENTED.md](knowledge/NOT-IMPLEMENTED.md)** - Missing features & roadmap
 - **[knowledge/REQUIREMENTS.md](knowledge/REQUIREMENTS.md)** - Functional requirements
 - **[knowledge/DESIGN.md](knowledge/DESIGN.md)** - UI/UX design specification
 
@@ -134,9 +129,9 @@ Open `index.html` and check browser console:
 - ✅ WikidataAPI: 8/8 tests passing
 
 ### Manual Testing
-Follow [TEST-CHECKLIST.md](TEST-CHECKLIST.md) for comprehensive test scenarios.
+Use the test data files in `test-data/` directory.
 
-**Example Test Run** (31 people):
+**Example Test Run** (31 people from `test-data/names.csv`):
 ```
 ✓ 11 auto-matched (35.5%)
 ⚠ 16 need review (51.6%)
@@ -191,7 +186,6 @@ Follow [TEST-CHECKLIST.md](TEST-CHECKLIST.md) for comprehensive test scenarios.
 ## 🔮 Roadmap
 
 ### v1.1 (Next Release)
-- [ ] Keyboard shortcuts (↑/↓, Tab, Enter)
 - [ ] Batch actions ("Accept all >95%")
 - [ ] Undo/Redo functionality
 - [ ] Cross-browser testing
@@ -206,7 +200,6 @@ Follow [TEST-CHECKLIST.md](TEST-CHECKLIST.md) for comprehensive test scenarios.
 
 ### v2.0 (Advanced Features)
 - [ ] Virtual scrolling for 10k+ rows
-- [ ] Dark mode toggle
 - [ ] Custom Wikibase support
 - [ ] Export to JSON-LD/RDF
 - [ ] PWA with offline mode
@@ -228,7 +221,7 @@ python -m http.server 8000
 ```
 
 ### Reporting Issues
-- Check [TEST-CHECKLIST.md](TEST-CHECKLIST.md) first
+- Test with files from `test-data/` first
 - Include browser version and console logs
 - Provide sample CSV if possible
 
