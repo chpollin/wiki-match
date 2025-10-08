@@ -252,6 +252,11 @@ const Reconciliation = {
 
     showExportButton() {
         document.getElementById('proceedToExport').classList.remove('hidden');
+
+        // Update download button label based on file type
+        if (window.ExportService && typeof ExportService.updateDownloadButtonLabel === 'function') {
+            ExportService.updateDownloadButtonLabel(this.isTEI);
+        }
     },
 
     getRowClass(status) {

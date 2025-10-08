@@ -16,6 +16,17 @@ const ExportService = {
         Logger.success('EXPORT', 'Export service initialized');
     },
 
+    updateDownloadButtonLabel(isTEI) {
+        const downloadBtn = document.getElementById('downloadCSV');
+        const btnText = downloadBtn.querySelector('svg').nextSibling;
+
+        if (btnText && btnText.nodeType === Node.TEXT_NODE) {
+            btnText.textContent = isTEI ? ' Download TEI XML' : ' Download CSV';
+        }
+
+        Logger.info('EXPORT', `Button label updated: ${isTEI ? 'TEI XML' : 'CSV'}`);
+    },
+
     prepareExportData(originalData, reconciliationResults) {
         Logger.info('EXPORT', 'Preparing export data');
 
