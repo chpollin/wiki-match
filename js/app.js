@@ -102,9 +102,24 @@ const App = {
         Logger.info('APP', 'File uploaded callback', { rows: data.rowCount, columns: data.columnCount });
 
         this.parsedData = data;
+        this.isTEI = false;
 
         // Prepare configuration step
         ColumnConfig.populateColumns(data.headers);
+    },
+
+    onTEIUploaded(entities) {
+        Logger.info('APP', 'TEI uploaded callback', {
+            persons: entities.persons.length,
+            places: entities.places.length,
+            orgs: entities.orgs.length
+        });
+
+        this.teiEntities = entities;
+        this.isTEI = true;
+
+        // Prepare configuration step for TEI
+        ColumnConfig.populateTEIEntities(entities);
     },
 
     async onReconciliationStart(config) {
@@ -113,9 +128,20 @@ const App = {
         this.config = config;
         this.showStep(3);
 
+        // Convert TEI entities to reconciliation format if needed
+        let dataToReconcile = this.parsedData;
+
+        if (this.isTEI && this.teiEntities) {
+            // Convert TEI entities to CSV-like format
+            dataToReconcile = TEIParser.entitiesToReconciliationFormat(
+                this.teiEntities,
+                config.entityTypeFilter
+            );
+        }
+
         // Start reconciliation with slight delay for UI update
         setTimeout(async () => {
-            await Reconciliation.start(this.parsedData, config);
+            await Reconciliation.start(dataToReconcile, config);
 
             // Update export summary
             const results = Reconciliation.getResults();

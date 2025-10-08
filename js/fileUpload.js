@@ -52,6 +52,17 @@ const FileUpload = {
     async handleFile(file) {
         Logger.info('UPLOAD', `File selected: ${file.name}`);
 
+        // Detect file type
+        const isTEI = file.name.toLowerCase().endsWith('.xml');
+
+        if (isTEI) {
+            await this.handleTEIFile(file);
+        } else {
+            await this.handleCSVFile(file);
+        }
+    },
+
+    async handleCSVFile(file) {
         // Validate file
         const validation = Utils.validateCSVFile(file);
         if (!validation.valid) {
@@ -82,6 +93,30 @@ const FileUpload = {
         }
     },
 
+    async handleTEIFile(file) {
+        Utils.showLoading('Parsing TEI XML file...');
+
+        try {
+            // Parse TEI
+            const entities = await TEIParser.parse(file);
+
+            this.currentFile = file;
+            this.showTEIInfo(file, entities);
+
+            // Notify app
+            if (window.App && window.App.onTEIUploaded) {
+                window.App.onTEIUploaded(entities);
+            }
+
+            Logger.success('UPLOAD', 'TEI file processed successfully');
+        } catch (error) {
+            Utils.showError(`Failed to parse TEI XML: ${error.message}`);
+            Logger.error('UPLOAD', 'TEI processing failed', error);
+        } finally {
+            Utils.hideLoading();
+        }
+    },
+
     showFileInfo(file, data) {
         const fileInfo = document.getElementById('fileInfo');
         const fileName = document.getElementById('fileName');
@@ -95,6 +130,25 @@ const FileUpload = {
         nextBtn.classList.remove('hidden');
     },
 
+    showTEIInfo(file, entities) {
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileStats = document.getElementById('fileStats');
+        const nextBtn = document.getElementById('nextToConfig');
+
+        fileName.textContent = file.name;
+
+        const parts = [];
+        if (entities.persons.length > 0) parts.push(`${entities.persons.length} persons`);
+        if (entities.places.length > 0) parts.push(`${entities.places.length} places`);
+        if (entities.orgs.length > 0) parts.push(`${entities.orgs.length} organizations`);
+
+        fileStats.textContent = `TEI XML · ${parts.join(', ')} · ${Utils.formatFileSize(file.size)}`;
+
+        fileInfo.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
+    },
+
     clearFile() {
         this.currentFile = null;
         document.getElementById('fileInput').value = '';
@@ -102,6 +156,7 @@ const FileUpload = {
         document.getElementById('nextToConfig').classList.add('hidden');
 
         CSVParser.clear();
+        TEIParser.clear();
 
         Logger.info('UPLOAD', 'File cleared');
     }

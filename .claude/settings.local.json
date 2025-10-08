@@ -5,7 +5,8 @@
       "Bash(git add:*)",
       "Bash(git log:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nAdd WikiMatch MVP - Vanilla JS Wikidata Reconciliation Tool\n\nImplemented complete single-page application for Wikidata entity reconciliation:\n\nFeatures:\n- File upload with drag & drop (CSV/TSV/TXT support)\n- Wikidata Reconciliation API integration with rate limiting\n- Entity type filtering (Person, Organization, Place)\n- Auto-matching for high-confidence results (≥95%)\n- Manual review interface with candidate cards\n- CSV export with Wikidata IDs and metadata\n- Built-in console logging and unit tests\n\nTech Stack:\n- Vanilla JavaScript (zero framework dependencies)\n- Tailwind CSS (CDN)\n- PapaParse for CSV parsing\n- Form-encoded API requests (fixed from JSON)\n\nTest Data:\n- People, places, concepts, organizations\n- Multiple formats (CSV, TSV, semicolon-delimited)\n\nDocumentation:\n- Usage guide with workflow examples\n- Comprehensive test checklist\n- API troubleshooting tips\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

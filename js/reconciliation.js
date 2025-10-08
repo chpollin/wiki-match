@@ -10,16 +10,29 @@ const Reconciliation = {
     async start(data, config) {
         Logger.info('RECONCILE', `Starting reconciliation for ${data.rowCount} rows`);
 
+        // Store if this is TEI data
+        this.isTEI = data.isTEI || false;
+
         // Build reconciliation items
-        this.items = data.rows.map((row, index) => ({
-            id: `row_${index}`,
-            rowIndex: index,
-            originalValue: row[config.primaryColumn],
-            row: row,
-            candidates: [],
-            selectedCandidate: null,
-            status: 'pending' // pending, matched, review, no-match
-        }));
+        this.items = data.rows.map((row, index) => {
+            const item = {
+                id: `row_${index}`,
+                rowIndex: index,
+                originalValue: row[config.primaryColumn] || row.name, // TEI uses 'name'
+                row: row,
+                candidates: [],
+                selectedCandidate: null,
+                status: 'pending' // pending, matched, review, no-match
+            };
+
+            // Store TEI-specific data if present
+            if (row.__tei_entity) {
+                item.teiXmlId = row.__tei_entity.xmlId;
+                item.teiType = row.__tei_entity.type;
+            }
+
+            return item;
+        });
 
         this.stats = {
             matched: 0,

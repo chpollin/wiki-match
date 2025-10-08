@@ -57,13 +57,57 @@ const ColumnConfig = {
             select.appendChild(option);
         });
 
+        this.config.isTEI = false;
         Logger.info('CONFIG', `Populated ${headers.length} columns`);
     },
 
+    populateTEIEntities(entities) {
+        const select = document.getElementById('primaryColumn');
+        select.innerHTML = '<option value="">Select entity type...</option>';
+
+        const entityOptions = [];
+        if (entities.persons.length > 0) {
+            entityOptions.push({ value: 'person', label: `Persons (${entities.persons.length})` });
+        }
+        if (entities.places.length > 0) {
+            entityOptions.push({ value: 'place', label: `Places (${entities.places.length})` });
+        }
+        if (entities.orgs.length > 0) {
+            entityOptions.push({ value: 'org', label: `Organizations (${entities.orgs.length})` });
+        }
+
+        entityOptions.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            select.appendChild(option);
+        });
+
+        // Auto-select if only one type
+        if (entityOptions.length === 1) {
+            select.value = entityOptions[0].value;
+            this.config.primaryColumn = entityOptions[0].value;
+            this.config.entityTypeFilter = entityOptions[0].value;
+        }
+
+        this.config.isTEI = true;
+        Logger.info('CONFIG', `Populated TEI entities: ${entityOptions.length} types`);
+    },
+
     validate() {
-        if (!this.config.primaryColumn) {
+        if (!this.config.primaryColumn && !this.config.isTEI) {
             Utils.showError('Please select a column to match');
             return false;
+        }
+
+        if (this.config.isTEI && !this.config.primaryColumn) {
+            Utils.showError('Please select an entity type');
+            return false;
+        }
+
+        if (this.config.isTEI) {
+            // Store entity type filter for TEI
+            this.config.entityTypeFilter = this.config.primaryColumn;
         }
 
         Logger.success('CONFIG', 'Configuration validated', this.config);

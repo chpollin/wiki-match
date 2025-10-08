@@ -4,7 +4,13 @@ const ExportService = {
         const downloadBtn = document.getElementById('downloadCSV');
 
         downloadBtn.addEventListener('click', () => {
-            this.exportCSV();
+            // Check if TEI or CSV
+            const isTEI = Reconciliation.isTEI;
+            if (isTEI) {
+                this.exportTEI();
+            } else {
+                this.exportCSV();
+            }
         });
 
         Logger.success('EXPORT', 'Export service initialized');
@@ -93,6 +99,36 @@ const ExportService = {
         } catch (error) {
             Logger.error('EXPORT', 'Export failed', error);
             Utils.showError('Failed to export CSV. Please try again.');
+        }
+    },
+
+    exportTEI() {
+        Logger.info('EXPORT', 'Starting TEI XML export');
+
+        try {
+            const reconciliationResults = Reconciliation.getResults();
+
+            if (!reconciliationResults) {
+                Utils.showError('No data to export');
+                return;
+            }
+
+            // Generate enriched TEI XML
+            const enrichedXML = TEIParser.exportEnrichedTEI(reconciliationResults.items);
+
+            // Create download
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const fileName = `enriched_tei_${timestamp}.xml`;
+
+            this.downloadFile(enrichedXML, fileName, 'application/xml;charset=utf-8;');
+
+            Logger.success('EXPORT', `TEI XML exported: ${fileName}`, {
+                items: reconciliationResults.items.length
+            });
+
+        } catch (error) {
+            Logger.error('EXPORT', 'TEI export failed', error);
+            Utils.showError('Failed to export TEI XML. Please try again.');
         }
     },
 

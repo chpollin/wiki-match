@@ -129,10 +129,10 @@
                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                     </svg>
-                    <p class="text-lg text-gray-700 mb-2">Drag & Drop CSV/TSV here</p>
+                    <p class="text-lg text-gray-700 mb-2">Drag & Drop CSV/TSV/TEI XML here</p>
                     <p class="text-sm text-gray-500 mb-4">or click to browse</p>
-                    <p class="text-xs text-gray-400">Max 10 MB · UTF-8 encoding</p>
-                    <input type="file" id="fileInput" accept=".csv,.tsv,.txt" class="hidden">
+                    <p class="text-xs text-gray-400">Max 10 MB · UTF-8 encoding · TEI XML supported</p>
+                    <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xml" class="hidden">
                 </div>
 
                 <div id="fileInfo" class="hidden mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -309,6 +309,7 @@
     <!-- Scripts -->
     <script src="js/utils.js"></script>
     <script src="js/csvParser.js"></script>
+    <script src="js/teiParser.js"></script>
     <script src="js/wikidataAPI.js"></script>
     <script src="js/fileUpload.js"></script>
     <script src="js/columnConfig.js"></script>
