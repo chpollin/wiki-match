@@ -1,0 +1,9 @@
+organization;founded;type
+United Nations;1945;International organization
+UNESCO;1945;UN agency
+Red Cross;1863;Humanitarian organization
+Greenpeace;1971;Environmental NGO
+Amnesty International;1961;Human rights NGO
+World Bank;1944;Financial institution
+NATO;1949;Military alliance
+European Union;1993;Political union
