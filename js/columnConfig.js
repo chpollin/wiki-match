@@ -16,6 +16,11 @@ const ColumnConfig = {
         primaryColumnSelect.addEventListener('change', (e) => {
             this.config.primaryColumn = e.target.value;
             Logger.info('CONFIG', `Primary column selected: ${e.target.value}`);
+
+            // Update entity type checkboxes for TEI
+            if (this.config.isTEI) {
+                this.updateEntityTypeCheckboxes(e.target.value);
+            }
         });
 
         // Entity type filters
@@ -66,17 +71,31 @@ const ColumnConfig = {
         select.innerHTML = '<option value="">Select entity type...</option>';
 
         const entityOptions = [];
+        let totalCount = 0;
+
         if (entities.persons.length > 0) {
             entityOptions.push({ value: 'person', label: `Persons (${entities.persons.length})` });
+            totalCount += entities.persons.length;
         }
         if (entities.places.length > 0) {
             entityOptions.push({ value: 'place', label: `Places (${entities.places.length})` });
+            totalCount += entities.places.length;
         }
         if (entities.orgs.length > 0) {
             entityOptions.push({ value: 'org', label: `Organizations (${entities.orgs.length})` });
+            totalCount += entities.orgs.length;
         }
         if (entities.concepts && entities.concepts.length > 0) {
             entityOptions.push({ value: 'concept', label: `Concepts (${entities.concepts.length})` });
+            totalCount += entities.concepts.length;
+        }
+
+        // Add "All" option if multiple types exist
+        if (entityOptions.length > 1) {
+            const allOption = document.createElement('option');
+            allOption.value = 'all';
+            allOption.textContent = `All entity types (${totalCount})`;
+            select.appendChild(allOption);
         }
 
         entityOptions.forEach(opt => {
@@ -95,6 +114,39 @@ const ColumnConfig = {
 
         this.config.isTEI = true;
         Logger.info('CONFIG', `Populated TEI entities: ${entityOptions.length} types`);
+    },
+
+    updateEntityTypeCheckboxes(selectedEntityType) {
+        const checkboxes = document.querySelectorAll('input[name="entityType"]');
+
+        // Mapping from TEI entity types to Wikidata type IDs
+        const typeMapping = {
+            'person': 'Q5',
+            'place': 'Q618123',
+            'org': 'Q43229',
+            'concept': null, // Concepts don't have a single type filter
+            'all': 'all'
+        };
+
+        const wikidataType = typeMapping[selectedEntityType];
+
+        if (wikidataType === 'all') {
+            // Check all checkboxes
+            checkboxes.forEach(cb => cb.checked = true);
+            this.config.entityTypes = Array.from(checkboxes).map(cb => cb.value);
+        } else if (wikidataType) {
+            // Check only the matching checkbox
+            checkboxes.forEach(cb => {
+                cb.checked = (cb.value === wikidataType);
+            });
+            this.config.entityTypes = [wikidataType];
+        } else {
+            // For concepts or unknown, uncheck all (no specific filter)
+            checkboxes.forEach(cb => cb.checked = false);
+            this.config.entityTypes = [];
+        }
+
+        Logger.info('CONFIG', `Updated entity type checkboxes for: ${selectedEntityType}`);
     },
 
     validate() {

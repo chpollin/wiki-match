@@ -444,6 +444,15 @@ const TEIParser = {
             case 'concept':
                 selectedEntities = entities.concepts;
                 break;
+            case 'all':
+                // Combine all entity types
+                selectedEntities = [
+                    ...entities.persons,
+                    ...entities.places,
+                    ...entities.orgs,
+                    ...entities.concepts
+                ];
+                break;
             default:
                 // Combine all if no specific type selected
                 selectedEntities = [
