@@ -75,6 +75,9 @@ const ColumnConfig = {
         if (entities.orgs.length > 0) {
             entityOptions.push({ value: 'org', label: `Organizations (${entities.orgs.length})` });
         }
+        if (entities.concepts && entities.concepts.length > 0) {
+            entityOptions.push({ value: 'concept', label: `Concepts (${entities.concepts.length})` });
+        }
 
         entityOptions.forEach(opt => {
             const option = document.createElement('option');

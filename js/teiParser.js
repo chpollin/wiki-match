@@ -35,7 +35,8 @@ const TEIParser = {
                     Logger.success('TEI', `Extracted ${entities.totalCount} entities`, {
                         persons: entities.persons.length,
                         places: entities.places.length,
-                        orgs: entities.orgs.length
+                        orgs: entities.orgs.length,
+                        concepts: entities.concepts.length
                     });
 
                     resolve(entities);
@@ -63,6 +64,7 @@ const TEIParser = {
             persons: [],
             places: [],
             orgs: [],
+            concepts: [],
             totalCount: 0
         };
 
@@ -93,7 +95,17 @@ const TEIParser = {
             }
         });
 
-        entities.totalCount = entities.persons.length + entities.places.length + entities.orgs.length;
+        // Extract taxonomy/category terms
+        const categoryElements = this.getElementsNS(xmlDoc, 'category');
+        categoryElements.forEach((categoryEl, index) => {
+            const concept = this.extractCategory(categoryEl, index);
+            if (concept) {
+                entities.concepts.push(concept);
+            }
+        });
+
+        entities.totalCount = entities.persons.length + entities.places.length +
+                             entities.orgs.length + entities.concepts.length;
 
         return entities;
     },
@@ -150,6 +162,9 @@ const TEIParser = {
             return null;
         }
 
+        // Check for existing Wikidata reference
+        const existingRef = this.extractExistingRef(personEl);
+
         // Extract context for better matching
         const birth = this.getChildText(personEl, 'birth');
         const death = this.getChildText(personEl, 'death');
@@ -165,6 +180,7 @@ const TEIParser = {
                 death: death || null,
                 sex: sex || null
             },
+            existingRef: existingRef,
             element: personEl
         };
     },
@@ -185,6 +201,9 @@ const TEIParser = {
             return null;
         }
 
+        // Check for existing Wikidata reference
+        const existingRef = this.extractExistingRef(placeEl);
+
         // Extract context
         const settlement = this.getChildText(placeEl, 'settlement');
         const region = this.getChildText(placeEl, 'region');
@@ -200,6 +219,7 @@ const TEIParser = {
                 region: region || null,
                 country: country || null
             },
+            existingRef: existingRef,
             element: placeEl
         };
     },
@@ -220,6 +240,9 @@ const TEIParser = {
             return null;
         }
 
+        // Check for existing Wikidata reference
+        const existingRef = this.extractExistingRef(orgEl);
+
         // Extract context
         const settlement = this.getChildText(orgEl, 'settlement');
         const region = this.getChildText(orgEl, 'region');
@@ -235,8 +258,99 @@ const TEIParser = {
                 region: region || null,
                 desc: desc || null
             },
+            existingRef: existingRef,
             element: orgEl
         };
+    },
+
+    /**
+     * Extract category/concept data from taxonomy
+     */
+    extractCategory(categoryEl, index) {
+        const xmlId = categoryEl.getAttribute('xml:id') || `category_${index}`;
+
+        // Extract term from catDesc > term
+        const catDescEl = categoryEl.getElementsByTagNameNS(this.TEI_NAMESPACE, 'catDesc')[0] ||
+                         categoryEl.getElementsByTagName('catDesc')[0];
+
+        let name = '';
+        if (catDescEl) {
+            const termEl = catDescEl.getElementsByTagNameNS(this.TEI_NAMESPACE, 'term')[0] ||
+                          catDescEl.getElementsByTagName('term')[0];
+            name = termEl ? termEl.textContent.trim() : catDescEl.textContent.trim();
+        }
+
+        if (!name) {
+            Logger.warning('TEI', `Category ${xmlId} has no term, skipping`);
+            return null;
+        }
+
+        // Check for existing Wikidata reference
+        const existingRef = this.extractExistingRef(categoryEl);
+
+        // Also check term element for ref
+        if (!existingRef && catDescEl) {
+            const termEl = catDescEl.getElementsByTagNameNS(this.TEI_NAMESPACE, 'term')[0] ||
+                          catDescEl.getElementsByTagName('term')[0];
+            if (termEl) {
+                const termRef = this.extractExistingRef(termEl);
+                if (termRef) {
+                    return {
+                        id: Utils.generateId(),
+                        xmlId: xmlId,
+                        type: 'concept',
+                        name: name,
+                        context: {},
+                        existingRef: termRef,
+                        element: categoryEl,
+                        refElement: termEl // Store where ref should be added
+                    };
+                }
+            }
+        }
+
+        return {
+            id: Utils.generateId(),
+            xmlId: xmlId,
+            type: 'concept',
+            name: name,
+            context: {},
+            existingRef: existingRef,
+            element: categoryEl
+        };
+    },
+
+    /**
+     * Extract existing Wikidata reference from element
+     * Handles formats: @ref="wd:Q123", @ref="http://www.wikidata.org/entity/Q123"
+     */
+    extractExistingRef(element) {
+        const ref = element.getAttribute('ref');
+        if (!ref) return null;
+
+        // Handle wd:Q123 format
+        if (ref.startsWith('wd:') || ref.startsWith('wd:q')) {
+            const qid = ref.replace(/^wd:/i, '').toUpperCase();
+            return {
+                id: qid,
+                url: `http://www.wikidata.org/entity/${qid}`,
+                source: 'existing'
+            };
+        }
+
+        // Handle full URL format
+        if (ref.includes('wikidata.org/entity/')) {
+            const match = ref.match(/[Qq]\d+/);
+            if (match) {
+                return {
+                    id: match[0].toUpperCase(),
+                    url: ref,
+                    source: 'existing'
+                };
+            }
+        }
+
+        return null;
     },
 
     /**
@@ -257,6 +371,9 @@ const TEIParser = {
         // Add @ref attributes to matched elements
         items.forEach(item => {
             if (item.selectedCandidate && item.teiXmlId) {
+                // Use wd:Q format for ref attribute
+                const wikidataRef = `wd:${item.selectedCandidate.id}`;
+
                 // Find the element by xml:id
                 const xpath = `//*[@xml:id="${item.teiXmlId}"]`;
                 const result = enrichedDoc.evaluate(
@@ -269,8 +386,24 @@ const TEIParser = {
 
                 const element = result.singleNodeValue;
                 if (element) {
-                    element.setAttribute('ref', item.selectedCandidate.url);
-                    Logger.info('TEI', `Added @ref to ${item.teiXmlId}: ${item.selectedCandidate.id}`);
+                    // For categories, add @ref to <term> element if it exists
+                    if (item.row && item.row.__tei_entity && item.row.__tei_entity.refElement) {
+                        // Find the term element within this category
+                        const catDescEl = element.getElementsByTagNameNS(this.TEI_NAMESPACE, 'catDesc')[0] ||
+                                         element.getElementsByTagName('catDesc')[0];
+                        if (catDescEl) {
+                            const termEl = catDescEl.getElementsByTagNameNS(this.TEI_NAMESPACE, 'term')[0] ||
+                                          catDescEl.getElementsByTagName('term')[0];
+                            if (termEl) {
+                                termEl.setAttribute('ref', wikidataRef);
+                                Logger.info('TEI', `Added @ref to <term> in ${item.teiXmlId}: ${item.selectedCandidate.id}`);
+                            }
+                        }
+                    } else {
+                        // Add to main element (person, place, org)
+                        element.setAttribute('ref', wikidataRef);
+                        Logger.info('TEI', `Added @ref to ${item.teiXmlId}: ${item.selectedCandidate.id}`);
+                    }
                 }
             }
         });
@@ -308,27 +441,32 @@ const TEIParser = {
             case 'org':
                 selectedEntities = entities.orgs;
                 break;
+            case 'concept':
+                selectedEntities = entities.concepts;
+                break;
             default:
                 // Combine all if no specific type selected
                 selectedEntities = [
                     ...entities.persons,
                     ...entities.places,
-                    ...entities.orgs
+                    ...entities.orgs,
+                    ...entities.concepts
                 ];
         }
 
         // Convert to format expected by reconciliation module
         return {
             fileName: 'TEI XML',
-            headers: ['name', 'type', 'context'],
+            headers: ['name', 'type', 'context', 'existing_ref'],
             rows: selectedEntities.map(entity => ({
                 name: entity.name,
                 type: entity.type,
                 context: JSON.stringify(entity.context),
+                existing_ref: entity.existingRef ? entity.existingRef.id : '',
                 __tei_entity: entity // Store original entity reference
             })),
             rowCount: selectedEntities.length,
-            columnCount: 3,
+            columnCount: 4,
             isTEI: true,
             originalEntities: selectedEntities
         };

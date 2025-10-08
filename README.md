@@ -23,10 +23,10 @@
 ## 🚀 Quick Start
 
 1. **Open** `index.html` in your browser
-2. **Upload** CSV/TSV file (drag & drop or browse)
+2. **Upload** CSV/TSV/TEI XML file (drag & drop or browse)
 3. **Configure** primary column + optional entity type filter
 4. **Review** auto-matched and suggested candidates
-5. **Export** CSV with Wikidata IDs
+5. **Export** CSV (or enriched TEI XML) with Wikidata IDs
 
 ### Live Demo
 [Coming soon: GitHub Pages deployment]
@@ -36,11 +36,14 @@
 ## ✨ Features (MVP v1.0)
 
 ### Implemented ✅
-- **File Upload**: CSV, TSV, TXT (semicolon-delimited) with drag & drop
-- **Entity Type Filtering**: Person (Q5), Organization (Q43229), Place (Q618123)
+- **File Upload**: CSV, TSV, TXT (semicolon-delimited), TEI XML with drag & drop
+- **TEI XML Support**: Extract entities from `listPerson`, `listPlace`, `listOrg`, and `taxonomy/category` in header/back matter
+- **Existing Wikidata IDs**: Detects and preserves existing `@ref` attributes (formats: `wd:Q123` or full URLs)
+- **Entity Type Filtering**: Person (Q5), Organization (Q43229), Place (Q618123), Concepts
 - **Auto-Matching**: High-confidence results (≥95%) automatically selected
 - **Manual Review**: Select from multiple candidates with confidence scores
 - **CSV Export**: Original data + Wikidata IDs, URLs, confidence scores, status
+- **TEI Export**: Enriched TEI XML with `@ref` attributes (uses `wd:Q123` format)
 - **Rate Limiting**: Respects Wikidata API limits (50 req/min)
 - **Caching**: Session-based to reduce redundant queries
 - **Logging**: Color-coded console logs for debugging
@@ -68,6 +71,7 @@ All test files in `test-data/` directory:
 | **CSV** | `names.csv`, `places.csv`, `concepts.csv` | Comma-separated |
 | **TSV** | `places.tsv`, `concepts.tsv` | Tab-separated |
 | **TXT** | `organizations.txt` | Semicolon-delimited |
+| **TEI XML** | `depcha.wheaton.1.xml` | TEI header/back entities only |
 
 ### Sample Datasets
 - **People** (31 rows): Historical figures, authors
@@ -75,6 +79,7 @@ All test files in `test-data/` directory:
 - **Concepts** (10+8 rows): Scientific theories, art movements
 - **Organizations** (8 rows): International institutions
 - **Scientists** (10 rows): Famous researchers
+- **TEI XML** (594KB): Digital Humanities TEI document with 130+ persons, 28+ orgs
 
 ---
 
@@ -95,12 +100,18 @@ wiki-match/
 │   ├── app.js              # Main controller & navigation
 │   ├── utils.js            # Logging, testing, helpers
 │   ├── csvParser.js        # CSV parsing service
+│   ├── teiParser.js        # TEI XML parsing & export service
 │   ├── wikidataAPI.js      # API integration + caching
-│   ├── fileUpload.js       # File upload component
+│   ├── fileUpload.js       # File upload component (CSV/TSV/TEI)
 │   ├── columnConfig.js     # Column mapping UI
 │   ├── reconciliation.js   # Match review interface
-│   └── export.js           # CSV export service
-├── test-data/              # Sample CSV/TSV files (people, places, concepts, orgs)
+│   └── export.js           # CSV/TEI export service
+├── test-data/              # Sample CSV/TSV/TEI files
+│   ├── names.csv           # People
+│   ├── places.csv/tsv      # Geographic entities
+│   ├── concepts.csv/tsv    # Abstract concepts
+│   ├── organizations.txt   # Organizations
+│   └── depcha.wheaton.1.xml # TEI XML sample
 ├── README.md               # This file
 └── knowledge/              # Planning & status docs
     ├── MVP-STATUS.md       # Implementation status
@@ -144,10 +155,11 @@ Use the test data files in `test-data/` directory.
 ## 🎯 Scope
 
 ### ✅ In Scope (v1.0 MVP)
-- CSV/TSV upload with validation
+- CSV/TSV/TEI XML upload with validation
+- TEI XML entity extraction (listPerson/Place/Org in header/back only)
 - Fuzzy matching against Wikidata
 - Manual review interface
-- Export with Wikidata IDs
+- Export with Wikidata IDs (CSV or enriched TEI XML)
 - Entity type filtering
 - Auto-matching (≥95% confidence)
 

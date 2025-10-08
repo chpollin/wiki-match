@@ -142,6 +142,7 @@ const FileUpload = {
         if (entities.persons.length > 0) parts.push(`${entities.persons.length} persons`);
         if (entities.places.length > 0) parts.push(`${entities.places.length} places`);
         if (entities.orgs.length > 0) parts.push(`${entities.orgs.length} organizations`);
+        if (entities.concepts && entities.concepts.length > 0) parts.push(`${entities.concepts.length} concepts`);
 
         fileStats.textContent = `TEI XML · ${parts.join(', ')} · ${Utils.formatFileSize(file.size)}`;
 
