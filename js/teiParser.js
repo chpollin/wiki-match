@@ -270,7 +270,6 @@ const TEIParser = {
         const xmlId = categoryEl.getAttribute('xml:id') || `category_${index}`;
 
         let name = '';
-        let refElement = null;
 
         // Try extracting from catDesc > term (standard TEI)
         const catDescEl = categoryEl.getElementsByTagNameNS(this.TEI_NAMESPACE, 'catDesc')[0] ||
@@ -280,7 +279,6 @@ const TEIParser = {
             const termEl = catDescEl.getElementsByTagNameNS(this.TEI_NAMESPACE, 'term')[0] ||
                           catDescEl.getElementsByTagName('term')[0];
             name = termEl ? termEl.textContent.trim() : catDescEl.textContent.trim();
-            refElement = termEl; // Prefer term element for ref
         }
 
         // Fallback: Try extracting from gloss (alternative TEI structure)
@@ -289,7 +287,6 @@ const TEIParser = {
                            categoryEl.getElementsByTagName('gloss')[0];
             if (glossEl) {
                 name = glossEl.textContent.trim();
-                refElement = glossEl; // Use gloss for ref
             }
         }
 
@@ -301,23 +298,6 @@ const TEIParser = {
         // Check for existing Wikidata reference on category element
         const existingRef = this.extractExistingRef(categoryEl);
 
-        // Also check term/gloss element for ref
-        if (!existingRef && refElement) {
-            const elementRef = this.extractExistingRef(refElement);
-            if (elementRef) {
-                return {
-                    id: Utils.generateId(),
-                    xmlId: xmlId,
-                    type: 'concept',
-                    name: name,
-                    context: {},
-                    existingRef: elementRef,
-                    element: categoryEl,
-                    refElement: refElement // Store where ref should be added
-                };
-            }
-        }
-
         return {
             id: Utils.generateId(),
             xmlId: xmlId,
@@ -325,8 +305,7 @@ const TEIParser = {
             name: name,
             context: {},
             existingRef: existingRef,
-            element: categoryEl,
-            refElement: refElement // Store for later ref addition
+            element: categoryEl
         };
     },
 
@@ -400,36 +379,13 @@ const TEIParser = {
                     Logger.warning('TEI', `Could not find element with xml:id="${item.teiXmlId}"`);
                 }
                 if (element) {
-                    // For categories, add @ref to <term> or <gloss> element if it exists
-                    if (item.row && item.row.__tei_entity && item.row.__tei_entity.refElement) {
-                        // Find the term element within this category
-                        const catDescEl = element.getElementsByTagNameNS(this.TEI_NAMESPACE, 'catDesc')[0] ||
-                                         element.getElementsByTagName('catDesc')[0];
-                        if (catDescEl) {
-                            const termEl = catDescEl.getElementsByTagNameNS(this.TEI_NAMESPACE, 'term')[0] ||
-                                          catDescEl.getElementsByTagName('term')[0];
-                            if (termEl) {
-                                termEl.setAttribute('ref', wikidataRef);
-                                Logger.info('TEI', `Added @ref to <term> in ${item.teiXmlId}: ${item.selectedCandidate.id}`);
-                            }
-                        } else {
-                            // Try gloss element
-                            const glossEl = element.getElementsByTagNameNS(this.TEI_NAMESPACE, 'gloss')[0] ||
-                                           element.getElementsByTagName('gloss')[0];
-                            if (glossEl) {
-                                glossEl.setAttribute('ref', wikidataRef);
-                                Logger.info('TEI', `Added @ref to <gloss> in ${item.teiXmlId}: ${item.selectedCandidate.id}`);
-                                addedCount++;
-                            } else {
-                                Logger.warning('TEI', `Could not find <gloss> element in ${item.teiXmlId}`);
-                            }
-                        }
-                    } else {
-                        // Add to main element (person, place, org, or category itself)
-                        element.setAttribute('ref', wikidataRef);
-                        Logger.info('TEI', `Added @ref to ${item.teiXmlId}: ${item.selectedCandidate.id}`);
-                        addedCount++;
-                    }
+                    // Always add @ref to the main element (person, place, org, category)
+                    element.setAttribute('ref', wikidataRef);
+
+                    // Determine element type for logging
+                    const elementType = element.tagName.toLowerCase();
+                    Logger.info('TEI', `Added @ref to <${elementType}> ${item.teiXmlId}: ${item.selectedCandidate.id}`);
+                    addedCount++;
                 }
             } else {
                 if (item.selectedCandidate && !item.teiXmlId) {
