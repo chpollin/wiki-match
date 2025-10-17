@@ -267,7 +267,14 @@ const Reconciliation = {
     },
 
     showExportButton() {
+        // Show bottom export button
         document.getElementById('proceedToExport').classList.remove('hidden');
+
+        // Show top export button
+        const topExportBtn = document.getElementById('proceedToExportTop');
+        if (topExportBtn) {
+            topExportBtn.classList.remove('hidden');
+        }
 
         // Show batch action buttons
         const batchActions = document.getElementById('batchActions');

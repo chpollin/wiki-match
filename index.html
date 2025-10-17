@@ -229,14 +229,19 @@
                 </div>
 
                 <!-- Batch Actions -->
-                <div id="batchActions" class="hidden mb-6 flex gap-2">
-                    <button id="acceptAllHighConfidence" class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg font-medium hover:bg-green-700 transition flex items-center gap-2">
-                        <span>✓</span>
-                        <span>Accept All ≥95%</span>
-                    </button>
-                    <button id="selectFirstForAll" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2">
-                        <span>⚡</span>
-                        <span>Select First Match for All</span>
+                <div id="batchActions" class="hidden mb-6 flex flex-wrap gap-2 items-center justify-between">
+                    <div class="flex gap-2">
+                        <button id="acceptAllHighConfidence" class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg font-medium hover:bg-green-700 transition flex items-center gap-2">
+                            <span>✓</span>
+                            <span>Accept All ≥95%</span>
+                        </button>
+                        <button id="selectFirstForAll" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2">
+                            <span>⚡</span>
+                            <span>Select First Match for All</span>
+                        </button>
+                    </div>
+                    <button id="proceedToExportTop" class="hidden px-6 py-2 bg-success text-white rounded-lg font-medium hover:bg-green-700 transition">
+                        Proceed to Export →
                     </button>
                 </div>
 

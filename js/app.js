@@ -40,6 +40,10 @@ const App = {
             this.showStep(4);
         });
 
+        document.getElementById('proceedToExportTop')?.addEventListener('click', () => {
+            this.showStep(4);
+        });
+
         document.getElementById('backToReconcile').addEventListener('click', () => {
             this.showStep(3);
         });
