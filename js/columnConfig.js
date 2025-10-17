@@ -110,6 +110,15 @@ const ColumnConfig = {
             select.value = entityOptions[0].value;
             this.config.primaryColumn = entityOptions[0].value;
             this.config.entityTypeFilter = entityOptions[0].value;
+            // Update checkboxes for auto-selected type
+            this.updateEntityTypeCheckboxes(entityOptions[0].value);
+        } else {
+            // Enable all checkboxes by default (no selection yet)
+            const checkboxes = document.querySelectorAll('input[name="entityType"]');
+            checkboxes.forEach(cb => {
+                cb.disabled = false;
+                cb.parentElement.style.opacity = '1';
+            });
         }
 
         this.config.isTEI = true;
@@ -131,18 +140,28 @@ const ColumnConfig = {
         const wikidataType = typeMapping[selectedEntityType];
 
         if (wikidataType === 'all') {
-            // Check all checkboxes
-            checkboxes.forEach(cb => cb.checked = true);
+            // Check all checkboxes and enable them
+            checkboxes.forEach(cb => {
+                cb.checked = true;
+                cb.disabled = false;
+                cb.parentElement.style.opacity = '1';
+            });
             this.config.entityTypes = Array.from(checkboxes).map(cb => cb.value);
         } else if (wikidataType) {
-            // Check only the matching checkbox
+            // Check only the matching checkbox and enable all
             checkboxes.forEach(cb => {
                 cb.checked = (cb.value === wikidataType);
+                cb.disabled = false;
+                cb.parentElement.style.opacity = '1';
             });
             this.config.entityTypes = [wikidataType];
         } else {
-            // For concepts or unknown, uncheck all (no specific filter)
-            checkboxes.forEach(cb => cb.checked = false);
+            // For concepts or unknown, uncheck all and disable (no specific filter)
+            checkboxes.forEach(cb => {
+                cb.checked = false;
+                cb.disabled = true;
+                cb.parentElement.style.opacity = '0.5';
+            });
             this.config.entityTypes = [];
         }
 
