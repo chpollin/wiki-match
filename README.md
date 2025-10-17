@@ -148,7 +148,6 @@ Use `test-data/` files
 
 - Single column only (no multi-column context)
 - No session persistence (refresh = lost)
-- No keyboard shortcuts
 - Browser: Chrome tested, others TBD
 
 ---
@@ -156,7 +155,6 @@ Use `test-data/` files
 ## 🗺 Roadmap
 
 ### v1.1
-- [ ] Keyboard shortcuts (↑/↓, Enter)
 - [ ] Undo/Redo
 - [ ] Toast notifications (replace alerts)
 - [ ] Cross-browser testing

@@ -1,7 +1,7 @@
 # Not Implemented Features - WikiMatch MVP
 
-**Last Updated**: 2025-10-08
-**Version**: 1.0 MVP
+**Last Updated**: 2025-10-17
+**Version**: 1.0 Production
 
 This document lists all features from the original requirements that were **not implemented** in the MVP, along with rationale and implementation notes for future versions.
 
@@ -38,39 +38,7 @@ This document lists all features from the original requirements that were **not 
 
 ---
 
-### 2. Keyboard Shortcuts (NFR-011, partial REQ-023)
-**Status**: ❌ Not Implemented
-**Priority**: High
-**Original Requirement**: Navigate and review matches using keyboard only
-
-**Why Not in MVP**:
-- Mouse/touch interaction works for initial validation
-- Requires event handling and focus management
-- Not critical for proof-of-concept
-
-**Future Implementation** (v1.1):
-```javascript
-// Proposed shortcuts
-↑/↓     - Navigate rows
-Enter   - Select first candidate
-Space   - Toggle selection
-Tab     - Jump to next "needs review"
-Shift+Tab - Jump to previous "needs review"
-A       - Auto-accept all ≥95%
-R       - Reject all candidates for current row
-U       - Undo last action
-?       - Show shortcut help
-```
-
-**Effort**: Medium (2-3 days)
-- Add global keyboard listener
-- Implement focus management
-- Add visual focus indicators
-- Create shortcut overlay modal
-
----
-
-### 3. Undo/Redo (REQ-022)
+### 2. Undo/Redo (REQ-022)
 **Status**: ❌ Not Implemented
 **Priority**: Medium
 **Original Requirement**: Undo/redo for match decisions
@@ -111,34 +79,7 @@ const history = {
 
 ---
 
-### 4. Batch Actions (REQ-023)
-**Status**: ❌ Not Implemented
-**Priority**: High
-**Original Requirement**: "Accept all ≥95%", "Reject all", bulk operations
-
-**Why Not in MVP**:
-- Manual review validates workflow
-- Requires confirmation dialogs for safety
-- Can be added iteratively
-
-**Future Implementation** (v1.1):
-```javascript
-// Batch action examples
-- "Auto-accept all ≥95%" (with confirmation)
-- "Reject all for this row"
-- "Select same entity for all similar names"
-- "Mark all as 'needs manual research'"
-```
-
-**Effort**: Low-Medium (1-2 days)
-- Add batch action buttons
-- Confirmation modals
-- Progress indicators for large batches
-- Integrate with undo/redo
-
----
-
-### 5. Data Preview Before Reconciliation (REQ-020)
+### 3. Data Preview Before Reconciliation (REQ-020)
 **Status**: ❌ Not Implemented
 **Priority**: Low
 **Original Requirement**: Show first 100 rows in table before starting reconciliation
@@ -168,7 +109,7 @@ const history = {
 
 ---
 
-### 6. Enhanced Entity Preview (REQ-024, partial)
+### 4. Enhanced Entity Preview (REQ-024, partial)
 **Status**: ⚠️ Partially Implemented
 **Current**: ID, name, description, confidence, link
 **Missing**: Thumbnail images, key properties, Wikipedia excerpt
@@ -441,25 +382,28 @@ navigator.onLine ? processQueue() : queueForLater();
 
 ## 📊 Summary: What's Missing
 
+### ✅ IMPLEMENTED in v1.0 (2025-10-17)
+- ✅ **Batch actions** - "Accept All ≥95%", "Select First for All"
+- ✅ **Top export button** - No scrolling needed
+
 ### High Priority (v1.1)
-1. ✅ Keyboard shortcuts - **Effort: 2-3 days**
-2. ✅ Batch actions - **Effort: 1-2 days**
-3. ✅ Undo/Redo - **Effort: 2 days**
+1. ✅ Undo/Redo - **Effort: 2 days**
+2. ✅ Toast notifications (replace alerts) - **Effort: 1 day**
 
 ### Medium Priority (v1.2)
-4. ✅ Multi-column context - **Effort: 2-3 days**
-5. ✅ Session persistence - **Effort: 2-3 days**
-6. ✅ Enhanced entity preview - **Effort: 2-3 days**
-7. ✅ Data preview - **Effort: 1 day**
+3. ✅ Multi-column context - **Effort: 2-3 days**
+4. ✅ Session persistence - **Effort: 2-3 days**
+5. ✅ Enhanced entity preview - **Effort: 2-3 days**
+6. ✅ Data preview - **Effort: 1 day**
 
 ### Low Priority (v1.3+)
-8. ✅ Dark mode - **Effort: 1 day**
-9. ✅ Export formats - **Effort: 2-3 days per format**
-10. ✅ Custom Wikibase - **Effort: 2 days**
+7. ✅ Dark mode - **Effort: 1 day**
+8. ✅ Export formats - **Effort: 2-3 days per format**
+9. ✅ Custom Wikibase - **Effort: 2 days**
 
 ### Future (v2.0)
-11. ✅ Virtual scrolling - **Effort: 2-3 days**
-12. ✅ PWA/Offline - **Effort: 5 days**
+10. ✅ Virtual scrolling - **Effort: 2-3 days**
+11. ✅ PWA/Offline - **Effort: 5 days**
 
 ---
 
@@ -470,13 +414,13 @@ navigator.onLine ? processQueue() : queueForLater();
 2. Cross-browser compatibility testing
 3. Mobile responsive testing
 4. Performance testing with 500-1000 rows
+5. Deploy to GitHub Pages
 
 ### v1.1 Goals (UX Polish):
-- Keyboard shortcuts (80% of power users will use this)
-- Batch "Accept all ≥95%" (huge time saver)
+- Toast notifications (better UX than alerts)
 - Undo/Redo (reduces user anxiety)
 
-**Total effort**: ~5-7 days for v1.1
+**Total effort**: ~3 days for v1.1
 
 ### v1.2 Goals (Advanced Matching):
 - Multi-column context (improves accuracy)

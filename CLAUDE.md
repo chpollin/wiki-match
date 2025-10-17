@@ -251,7 +251,6 @@ this.stats.matched++;
 - No session persistence (refresh loses progress)
 
 ### Not Implemented (Future)
-- Keyboard shortcuts (↑/↓ navigation, Enter to select)
 - Undo/Redo functionality
 - Virtual scrolling for 10k+ rows
 - Toast notifications instead of alerts
@@ -279,9 +278,8 @@ this.stats.matched++;
 
 ### Short Term (v1.1)
 1. Replace `alert()` with toast notifications
-2. Add keyboard shortcuts for navigation
-3. Implement undo/redo
-4. Add "Export progress" indicator
+2. Implement undo/redo
+3. Add "Export progress" indicator
 
 ### Medium Term (v1.2)
 1. Session persistence (LocalStorage)
