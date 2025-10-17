@@ -131,10 +131,15 @@ const WikidataAPI = {
         };
 
         // Add type filter if specified
-        // Note: Type filter format for Wikidata reconciliation API
-        if (options.types && options.types.length > 0) {
-            payload.queries.q0.type = options.types[0]; // API accepts single type as string
-            // Alternative: Try without type filter if it fails
+        // Note: Wikidata Reconciliation API accepts only a single type string OR no type filter
+        // If multiple types are selected (e.g., "All entity types"), omit the type filter
+        // to allow broader matching
+        if (options.types && options.types.length === 1) {
+            payload.queries.q0.type = options.types[0];
+            Logger.info('WIKIDATA', `Type filter: ${options.types[0]}`);
+        } else if (options.types && options.types.length > 1) {
+            Logger.info('WIKIDATA', `Multiple types selected (${options.types.length}), omitting type filter for broader search`);
+            // No type filter = search across all entity types
         }
 
         return payload;

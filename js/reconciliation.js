@@ -4,6 +4,15 @@ const Reconciliation = {
     stats: { matched: 0, review: 0, noMatch: 0, pending: 0 },
 
     init() {
+        // Setup batch action buttons
+        document.getElementById('acceptAllHighConfidence')?.addEventListener('click', () => {
+            this.acceptAllHighConfidence();
+        });
+
+        document.getElementById('selectFirstForAll')?.addEventListener('click', () => {
+            this.selectFirstForAll();
+        });
+
         Logger.success('RECONCILE', 'Reconciliation component initialized');
     },
 
@@ -195,14 +204,21 @@ const Reconciliation = {
 
     selectCandidate(itemId, candidateIndex) {
         const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
+        if (!item) {
+            Logger.warning('RECONCILE', `Item not found: ${itemId}`);
+            return;
+        }
+
+        // Store old status BEFORE changing
+        const oldStatus = item.status;
 
         item.selectedCandidate = item.candidates[candidateIndex];
         item.status = 'matched';
 
-        // Update stats
-        if (item.status === 'review') this.stats.review--;
-        else if (item.status === 'no-match') this.stats.noMatch--;
+        // Update stats based on OLD status
+        if (oldStatus === 'review') this.stats.review--;
+        else if (oldStatus === 'no-match') this.stats.noMatch--;
+        else if (oldStatus === 'pending') this.stats.pending--;
         this.stats.matched++;
 
         this.updateStats();
@@ -253,6 +269,12 @@ const Reconciliation = {
     showExportButton() {
         document.getElementById('proceedToExport').classList.remove('hidden');
 
+        // Show batch action buttons
+        const batchActions = document.getElementById('batchActions');
+        if (batchActions) {
+            batchActions.classList.remove('hidden');
+        }
+
         // Update download button label based on file type
         if (window.ExportService && typeof ExportService.updateDownloadButtonLabel === 'function') {
             ExportService.updateDownloadButtonLabel(this.isTEI);
@@ -290,6 +312,56 @@ const Reconciliation = {
             items: this.items,
             stats: this.stats
         };
+    },
+
+    // Batch Actions
+    acceptAllHighConfidence() {
+        Logger.info('RECONCILE', 'Accepting all high-confidence matches (≥95%)');
+
+        let acceptedCount = 0;
+        this.items.forEach(item => {
+            // Only auto-accept items in 'review' status with first candidate ≥95%
+            if (item.status === 'review' && item.candidates.length > 0) {
+                const topCandidate = item.candidates[0];
+                if (topCandidate.score >= 95) {
+                    item.selectedCandidate = topCandidate;
+                    item.status = 'matched';
+                    this.stats.review--;
+                    this.stats.matched++;
+                    acceptedCount++;
+                }
+            }
+        });
+
+        this.updateStats();
+        this.renderTable();
+
+        Logger.success('RECONCILE', `Accepted ${acceptedCount} high-confidence matches`);
+        alert(`✓ Accepted ${acceptedCount} high-confidence matches (≥95%)`);
+    },
+
+    selectFirstForAll() {
+        Logger.info('RECONCILE', 'Selecting first match for all items');
+
+        let selectedCount = 0;
+        this.items.forEach(item => {
+            // Select first candidate for items in 'review' status
+            if (item.status === 'review' && item.candidates.length > 0) {
+                const oldStatus = item.status;
+                item.selectedCandidate = item.candidates[0];
+                item.status = 'matched';
+
+                if (oldStatus === 'review') this.stats.review--;
+                this.stats.matched++;
+                selectedCount++;
+            }
+        });
+
+        this.updateStats();
+        this.renderTable();
+
+        Logger.success('RECONCILE', `Selected first match for ${selectedCount} items`);
+        alert(`⚡ Selected first match for ${selectedCount} items. Please review before exporting!`);
     }
 };
 
