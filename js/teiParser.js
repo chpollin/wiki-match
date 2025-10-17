@@ -379,6 +379,7 @@ const TEIParser = {
         const enrichedDoc = this.parsedXML.cloneNode(true);
 
         // Add @ref attributes to matched elements
+        let addedCount = 0;
         items.forEach(item => {
             if (item.selectedCandidate && item.teiXmlId) {
                 // Use wd:Q format for ref attribute
@@ -395,6 +396,9 @@ const TEIParser = {
                 );
 
                 const element = result.singleNodeValue;
+                if (!element) {
+                    Logger.warning('TEI', `Could not find element with xml:id="${item.teiXmlId}"`);
+                }
                 if (element) {
                     // For categories, add @ref to <term> or <gloss> element if it exists
                     if (item.row && item.row.__tei_entity && item.row.__tei_entity.refElement) {
@@ -415,16 +419,26 @@ const TEIParser = {
                             if (glossEl) {
                                 glossEl.setAttribute('ref', wikidataRef);
                                 Logger.info('TEI', `Added @ref to <gloss> in ${item.teiXmlId}: ${item.selectedCandidate.id}`);
+                                addedCount++;
+                            } else {
+                                Logger.warning('TEI', `Could not find <gloss> element in ${item.teiXmlId}`);
                             }
                         }
                     } else {
                         // Add to main element (person, place, org, or category itself)
                         element.setAttribute('ref', wikidataRef);
                         Logger.info('TEI', `Added @ref to ${item.teiXmlId}: ${item.selectedCandidate.id}`);
+                        addedCount++;
                     }
+                }
+            } else {
+                if (item.selectedCandidate && !item.teiXmlId) {
+                    Logger.warning('TEI', `Item has selected candidate but no teiXmlId: ${item.originalValue || item.row?.name}`);
                 }
             }
         });
+
+        Logger.success('TEI', `Added ${addedCount} @ref attributes to TEI XML`);
 
         // Serialize back to string
         const serializer = new XMLSerializer();
